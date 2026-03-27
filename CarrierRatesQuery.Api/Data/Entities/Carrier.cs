@@ -13,6 +13,8 @@ public class Carrier
     public ICollection<CarrierEndpoint> Endpoints { get; set; } = [];
     public ICollection<Shipment> Shipments { get; set; } = [];
     public ICollection<DisableRequest> DisableRequests { get; set; } = [];
+    public ICollection<CarrierDisableAudit> DisableAudits { get; set; } = [];
+    public ICollection<CarrierFinancialSettlement> FinancialSettlements { get; set; } = [];
 
     private static string ConvertToSlug(string name)
     {

@@ -74,6 +74,14 @@ public class DataSeeder(AppDbContext context)
             RequestedAtUtc = DateTime.UtcNow
         });
 
+        context.CarrierFinancialSettlements.Add(new CarrierFinancialSettlement
+        {
+            Id = Guid.NewGuid(),
+            CarrierId = fedExCarrier.Id,
+            Status = CarrierFinancialSettlementStatus.Pending,
+            CreatedAtUtc = DateTime.UtcNow
+        });
+
         context.SaveChanges();
     }
 }

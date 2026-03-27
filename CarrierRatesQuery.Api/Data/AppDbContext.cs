@@ -9,6 +9,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<CarrierEndpoint> CarrierEndpoints => Set<CarrierEndpoint>();
     public DbSet<Shipment> Shipments => Set<Shipment>();
     public DbSet<DisableRequest> DisableRequests => Set<DisableRequest>();
+    public DbSet<CarrierDisableAudit> CarrierDisableAudits => Set<CarrierDisableAudit>();
+    public DbSet<CarrierFinancialSettlement> CarrierFinancialSettlements => Set<CarrierFinancialSettlement>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,6 +30,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasMany(x => x.DisableRequests)
+                .WithOne(x => x.Carrier)
+                .HasForeignKey(x => x.CarrierId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(x => x.DisableAudits)
+                .WithOne(x => x.Carrier)
+                .HasForeignKey(x => x.CarrierId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(x => x.FinancialSettlements)
                 .WithOne(x => x.Carrier)
                 .HasForeignKey(x => x.CarrierId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -53,6 +65,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(x => x.RequestedBy).IsRequired().HasMaxLength(100);
             entity.Property(x => x.Reason).IsRequired().HasMaxLength(200);
             entity.Property(x => x.ProcessedBy).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<CarrierDisableAudit>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Reason).IsRequired().HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<CarrierFinancialSettlement>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Status).HasConversion<int>();
         });
     }
 }

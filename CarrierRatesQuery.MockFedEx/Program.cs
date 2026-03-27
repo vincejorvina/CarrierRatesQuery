@@ -18,6 +18,10 @@ app.UseHttpsRedirection();
 app.MapPost("/api/fedex/rates", ([FromBody] FedExRateRequest request) =>
 {
     var weightMultiplier = Math.Max(request.Package.Weight, 1m) * 0.15m;
+    var dimensions = request.Package.Dimensions;
+    var volumeCm3 = Math.Max(dimensions.Length * dimensions.Width * dimensions.Height, 1m);
+    var dimensionMultiplier = volumeCm3 * 0.002m;
+    var packageSurcharge = weightMultiplier + dimensionMultiplier;
 
     var response = new FedExRateResponse(
         Carrier: "FedEx",
@@ -26,17 +30,17 @@ app.MapPost("/api/fedex/rates", ([FromBody] FedExRateRequest request) =>
             new FedExServiceOption(
                 ServiceName: "FedEx Ground",
                 EstimatedDelivery: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(5)).ToString("yyyy-MM-dd"),
-                Rate: Math.Round(12.34m + weightMultiplier, 2)
+                Rate: Math.Round(12.34m + packageSurcharge, 2)
             ),
             new FedExServiceOption(
                 ServiceName: "FedEx 2Day",
                 EstimatedDelivery: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd"),
-                Rate: Math.Round(25.67m + weightMultiplier, 2)
+                Rate: Math.Round(25.67m + packageSurcharge, 2)
             ),
             new FedExServiceOption(
                 ServiceName: "FedEx Overnight",
                 EstimatedDelivery: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)).ToString("yyyy-MM-dd"),
-                Rate: Math.Round(45.89m + weightMultiplier, 2)
+                Rate: Math.Round(45.89m + packageSurcharge, 2)
             )
         ]
     );

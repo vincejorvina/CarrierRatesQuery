@@ -10,7 +10,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CarrierRatesQuery.Api\CarrierRatesQuery.Api.csproj" />
+    <ProjectReference Include="..\CarrierRatesQuery.MockLbc\CarrierRatesQuery.MockLbc.csproj" />
+    <ProjectReference Include="..\CarrierRatesQuery.MockDhl\CarrierRatesQuery.MockDhl.csproj" />
     <ProjectReference Include="..\CarrierRatesQuery.MockFedEx\CarrierRatesQuery.MockFedEx.csproj" />
+    <ProjectReference Include="..\CarrierRatesQuery.MockUps\CarrierRatesQuery.MockUps.csproj" />
   </ItemGroup>
 
 </Project>

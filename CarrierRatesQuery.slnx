@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CarrierRatesQuery.AppHost/CarrierRatesQuery.AppHost.csproj" />
+  <Project Path="CarrierRatesQuery.ServiceDefaults/CarrierRatesQuery.ServiceDefaults.csproj" />
+</Solution>

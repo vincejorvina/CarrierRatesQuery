@@ -1,6 +1,26 @@
 @CarrierRatesQuery.MockFedEx_HostAddress = http://localhost:5133
 
-GET {{CarrierRatesQuery.MockFedEx_HostAddress}}/weatherforecast/
+POST {{CarrierRatesQuery.MockFedEx_HostAddress}}/api/fedex/rates
 Accept: application/json
+Content-Type: application/json
+
+{
+  "origin": {
+    "postalCode": "12345",
+    "countryCode": "US"
+  },
+  "destination": {
+    "postalCode": "67890",
+    "countryCode": "US"
+  },
+  "package": {
+    "weight": 5,
+    "dimensions": {
+      "length": 10,
+      "width": 5,
+      "height": 5
+    }
+  }
+}
 
 ###

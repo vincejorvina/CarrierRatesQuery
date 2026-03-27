@@ -7,7 +7,12 @@ public class DataSeeder(AppDbContext context)
 {
     public void Seed()
     {
-        context.Carriers.Add(new Carrier
+        if (context.Carriers.Any())
+        {
+            return;
+        }
+
+        var fedExCarrier = new Carrier
         {
             Id = Guid.NewGuid(),
             Name = "FedEx",
@@ -19,9 +24,9 @@ public class DataSeeder(AppDbContext context)
                 Operation = "Rates",
                 Endpoint = "https://api.fedex.com/rates"
             }]
-        });
+        };
 
-        context.Carriers.Add(new Carrier
+        var dhlCarrier = new Carrier
         {
             Id = Guid.NewGuid(),
             Name = "DHL",
@@ -33,9 +38,9 @@ public class DataSeeder(AppDbContext context)
                 Operation = "Rates",
                 Endpoint = "https://api.dhl.com/rates"
             }]
-        });
+        };
 
-        context.Carriers.Add(new Carrier
+        var upsCarrier = new Carrier
         {
             Id = Guid.NewGuid(),
             Name = "UPS",
@@ -47,6 +52,26 @@ public class DataSeeder(AppDbContext context)
                 Operation = "Rates",
                 Endpoint = "https://api.ups.com/rates"
             }]
+        };
+
+        context.Carriers.AddRange(fedExCarrier, dhlCarrier, upsCarrier);
+
+        context.Shipments.Add(new Shipment
+        {
+            Id = Guid.NewGuid(),
+            CarrierId = dhlCarrier.Id,
+            Status = ShipmentStatus.Pending,
+            CreatedAtUtc = DateTime.UtcNow
+        });
+
+        context.DisableRequests.Add(new DisableRequest
+        {
+            Id = Guid.NewGuid(),
+            CarrierId = upsCarrier.Id,
+            RequestedBy = "user.demo",
+            Reason = "maintenance",
+            Status = DisableRequestStatus.Pending,
+            RequestedAtUtc = DateTime.UtcNow
         });
 
         context.SaveChanges();

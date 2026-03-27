@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -13,8 +15,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapPost("/api/fedex/rates", (FedExRateRequest request) =>
+app.MapPost("/api/fedex/rates", ([FromBody] FedExRateRequest request) =>
 {
+    var weightMultiplier = Math.Max(request.Package.Weight, 1m) * 0.15m;
+
     var response = new FedExRateResponse(
         Carrier: "FedEx",
         ServiceOptions:
@@ -22,36 +26,36 @@ app.MapPost("/api/fedex/rates", (FedExRateRequest request) =>
             new FedExServiceOption(
                 ServiceName: "FedEx Ground",
                 EstimatedDelivery: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(5)).ToString("yyyy-MM-dd"),
-                Rate: 12.34m
+                Rate: Math.Round(12.34m + weightMultiplier, 2)
             ),
             new FedExServiceOption(
                 ServiceName: "FedEx 2Day",
                 EstimatedDelivery: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd"),
-                Rate: 25.67m
+                Rate: Math.Round(25.67m + weightMultiplier, 2)
             ),
             new FedExServiceOption(
                 ServiceName: "FedEx Overnight",
                 EstimatedDelivery: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)).ToString("yyyy-MM-dd"),
-                Rate: 45.89m
+                Rate: Math.Round(45.89m + weightMultiplier, 2)
             )
         ]
     );
 
     return Results.Ok(response);
 })
-.WithName("GetFedExRates")
+.WithName("PostFedExRates")
+.Accepts<FedExRateRequest>("application/json")
+.Produces<FedExRateResponse>(StatusCodes.Status200OK)
 .WithOpenApi();
 
 await app.RunAsync();
 
-internal sealed record FedExRateRequest(FedExLocation Origin, FedExLocation Destination, FedExPackage Package);
+public sealed record FedExRateRequest(FedExPackage Package);
 
-internal sealed record FedExLocation(string PostalCode, string CountryCode);
+public sealed record FedExPackage(decimal Weight, FedExDimensions Dimensions);
 
-internal sealed record FedExPackage(decimal Weight, FedExDimensions Dimensions);
+public sealed record FedExDimensions(decimal Length, decimal Width, decimal Height);
 
-internal sealed record FedExDimensions(decimal Length, decimal Width, decimal Height);
+public sealed record FedExRateResponse(string Carrier, IReadOnlyList<FedExServiceOption> ServiceOptions);
 
-internal sealed record FedExRateResponse(string Carrier, IReadOnlyList<FedExServiceOption> ServiceOptions);
-
-internal sealed record FedExServiceOption(string ServiceName, string EstimatedDelivery, decimal Rate);
+public sealed record FedExServiceOption(string ServiceName, string EstimatedDelivery, decimal Rate);

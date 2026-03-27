@@ -1,0 +1,6 @@
+@CarrierRatesQuery.MockFedEx_HostAddress = http://localhost:5133
+
+GET {{CarrierRatesQuery.MockFedEx_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

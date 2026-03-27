@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="CarrierRatesQuery.Api/CarrierRatesQuery.Api.csproj" />
   <Project Path="CarrierRatesQuery.AppHost/CarrierRatesQuery.AppHost.csproj" />
+  <Project Path="CarrierRatesQuery.MockFedEx/CarrierRatesQuery.MockFedEx.csproj" />
   <Project Path="CarrierRatesQuery.ServiceDefaults/CarrierRatesQuery.ServiceDefaults.csproj" />
+  <Project Path="CarrierRatesQuery.Tests/CarrierRatesQuery.Tests.csproj" />
 </Solution>

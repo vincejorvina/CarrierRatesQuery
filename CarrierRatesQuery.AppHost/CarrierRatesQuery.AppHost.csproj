@@ -8,4 +8,9 @@
     <UserSecretsId>a2c93368-3247-4350-9362-ce0ece540025</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CarrierRatesQuery.Api\CarrierRatesQuery.Api.csproj" />
+    <ProjectReference Include="..\CarrierRatesQuery.MockFedEx\CarrierRatesQuery.MockFedEx.csproj" />
+  </ItemGroup>
+
 </Project>

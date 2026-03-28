@@ -36,10 +36,12 @@ public static class DependencyInjectionExtensions
         services.AddScoped<ICarrierRateStrategy, DhlRateStrategy>();
         services.AddScoped<ICarrierRateStrategy, FedExRateStrategy>();
         services.AddScoped<ICarrierRateStrategy, UpsRateStrategy>();
+        services.AddScoped<ICarrierRateStrategy, LbcRateStrategy>();
 
         services.AddScoped<ICarrierRateAdapter<MockDhlRateResponse>, DhlRateAdapter>();
         services.AddScoped<ICarrierRateAdapter<MockFedExRateResponse>, FedExRateAdapter>();
         services.AddScoped<ICarrierRateAdapter<MockUpsRateResponse>, UpsRateAdapter>();
+        services.AddScoped<ICarrierRateAdapter<MockLbcRateResponse>, LbcRateAdapter>();
 
         services.AddHttpClient<IMockDhlRatesClient, MockDhlRatesClient>(client =>
         {
@@ -54,6 +56,12 @@ public static class DependencyInjectionExtensions
         .AddStandardResilienceHandler();
 
         services.AddHttpClient<IMockUpsRatesClient, MockUpsRatesClient>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        })
+        .AddStandardResilienceHandler();
+
+        services.AddHttpClient<IMockLbcRatesClient, MockLbcRatesClient>(client =>
         {
             client.Timeout = TimeSpan.FromSeconds(30);
         })

@@ -90,6 +90,10 @@ Run unit tests:
 dotnet test CarrierRatesQuery.Tests/CarrierRatesQuery.Tests.csproj
 ```
 
+## Bonus Features
+
+- **Frontend Admin Tool**: A Vue/Vite admin dashboard that interacts with the API to demonstrate full-stack capabilities (rate querying, carrier management, disable request workflow).
+
 ## Notes
 
 - Database is seeded in-memory on startup (`CarrierRatesQuery.Api`).

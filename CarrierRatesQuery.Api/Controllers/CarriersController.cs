@@ -1,11 +1,16 @@
+using CarrierRatesQuery.Api.Infrastructure;
 using CarrierRatesQuery.Api.Services.Carriers;
+using CarrierRatesQuery.Api.Services.DisableRequests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarrierRatesQuery.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CarriersController(ICarrierService carrierService) : ControllerBase
+public class CarriersController(
+    ICarrierService carrierService,
+    IDisableRequestService disableRequestService,
+    IRequestRoleAccessor requestRoleAccessor) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<CarrierResponseDto>), StatusCodes.Status200OK)]
@@ -73,9 +78,42 @@ public class CarriersController(ICarrierService carrierService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Disable(Guid id, [FromBody] DisableCarrierRequest request, CancellationToken cancellationToken)
     {
+        var role = requestRoleAccessor.GetRequiredRole();
+        if (role != RequestRole.Admin)
+        {
+            throw new ForbiddenOperationException("Only administrators can disable carriers directly. Use disable-request flow for regular users.");
+        }
+
         var carrier = await carrierService.DisableAsync(id, request, cancellationToken);
         return Ok(carrier);
+    }
+
+    [HttpGet("{id:guid}/disable-requests")]
+    [ProducesResponseType(typeof(IReadOnlyList<DisableRequestResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetDisableRequests(Guid id, CancellationToken cancellationToken)
+    {
+        _ = requestRoleAccessor.GetRequiredRole();
+
+        var requests = await disableRequestService.GetByCarrierAsync(id, cancellationToken);
+        return Ok(requests);
+    }
+
+    [HttpPost("{id:guid}/disable-requests")]
+    [ProducesResponseType(typeof(DisableRequestResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateDisableRequest(Guid id, [FromBody] DisableCarrierRequest request, CancellationToken cancellationToken)
+    {
+        _ = requestRoleAccessor.GetRequiredRole();
+        var requestedBy = requestRoleAccessor.GetRequestedBy();
+
+        var disableRequest = await disableRequestService.CreateAsync(id, requestedBy, request.Reason, cancellationToken);
+        return CreatedAtAction(nameof(GetDisableRequests), new { id }, disableRequest);
     }
 }

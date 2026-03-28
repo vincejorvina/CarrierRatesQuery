@@ -2,6 +2,7 @@
 @carrierId = 00000000-0000-0000-0000-000000000000
 @endpointId = 00000000-0000-0000-0000-000000000000
 @carrierSlug = fedex
+@disableRequestId = 00000000-0000-0000-0000-000000000000
 
 GET {{CarrierRatesQuery.Api_HostAddress}}/api/carriers
 Accept: application/json
@@ -50,10 +51,43 @@ Content-Type: application/json
 PATCH {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}/disable
 Accept: application/json
 Content-Type: application/json
+X-Role: Admin
 
 {
   "reason": "maintenance"
 }
+
+###
+
+POST {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}/disable-requests
+Accept: application/json
+Content-Type: application/json
+X-Role: User
+X-Requested-By: user.demo
+
+{
+  "reason": "maintenance"
+}
+
+###
+
+GET {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}/disable-requests
+Accept: application/json
+X-Role: Admin
+
+###
+
+PATCH {{CarrierRatesQuery.Api_HostAddress}}/api/disable-requests/{{disableRequestId}}/approve
+Accept: application/json
+X-Role: Admin
+X-Requested-By: admin.demo
+
+###
+
+PATCH {{CarrierRatesQuery.Api_HostAddress}}/api/disable-requests/{{disableRequestId}}/reject
+Accept: application/json
+X-Role: Admin
+X-Requested-By: admin.demo
 
 ###
 

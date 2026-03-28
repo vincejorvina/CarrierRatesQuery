@@ -2,6 +2,7 @@ using CarrierRatesQuery.Api.Data;
 using CarrierRatesQuery.Api.Data.Seeder;
 using CarrierRatesQuery.Api.Services.CarrierEndpoints;
 using CarrierRatesQuery.Api.Services.Carriers;
+using CarrierRatesQuery.Api.Services.DisableRequests;
 using CarrierRatesQuery.Api.Services.Rates;
 using CarrierRatesQuery.Api.Services.Rates.Adapters;
 using CarrierRatesQuery.Api.Services.Rates.Clients;
@@ -18,6 +19,8 @@ public static class DependencyInjectionExtensions
         services.AddProblemDetails();
         services.AddExceptionHandler<ApiExceptionHandler>();
         services.AddMemoryCache();
+        services.AddHttpContextAccessor();
+        services.AddScoped<IRequestRoleAccessor, RequestRoleAccessor>();
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseInMemoryDatabase("CarrierRatesQueryDb"));
@@ -26,6 +29,7 @@ public static class DependencyInjectionExtensions
 
         services.AddScoped<ICarrierService, CarrierService>();
         services.AddScoped<ICarrierEndpointService, CarrierEndpointService>();
+        services.AddScoped<IDisableRequestService, DisableRequestService>();
         services.AddScoped<IRateQueryService, RateQueryService>();
 
         services.AddScoped<ICarrierRateStrategyResolver, CarrierRateStrategyResolver>();

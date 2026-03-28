@@ -42,6 +42,8 @@ The system aggregates shipping rates from multiple mock carrier APIs and exposes
 ### Implemented Runtime Features
 
 - **In-memory rate caching**: rate query results are cached in-memory per carrier/query key to reduce redundant outbound carrier calls.
+- **Role-aware disable flow via header**: `X-Role` controls admin-restricted actions; non-admin direct disable is blocked.
+- **Disable request workflow**: users can submit carrier disable requests; admins can approve/reject requests.
 
 ## Running Locally
 
@@ -96,15 +98,7 @@ dotnet test CarrierRatesQuery.Tests/CarrierRatesQuery.Tests.csproj
 
 Based on the original PDF requirements, these items are still pending or partially complete:
 
-- Add full disable-request workflow endpoints and logic:
-  - regular user submits disable request
-  - admin approves/rejects request
-- Add lightweight role handling (`X-Role`) to enforce:
-  - only admins can disable directly
-  - non-admin users can only request disable
 - Add retry policy for carrier API calls (bonus requirement).
 - Expand/add unit tests for:
-  - full disable-request approval flow
-  - role-based disable restrictions
   - retry/error handling behavior
 - Add a detailed step-by-step demo script (planned final documentation).

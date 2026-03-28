@@ -1,5 +1,6 @@
 using CarrierRatesQuery.Api.Services.Carriers;
 using CarrierRatesQuery.Api.Services.CarrierEndpoints;
+using CarrierRatesQuery.Api.Services.DisableRequests;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,7 @@ public sealed class ApiExceptionHandler : IExceptionHandler
             case CarrierNotFoundException:
             case CarrierSlugNotFoundException:
             case CarrierEndpointNotFoundException:
+            case DisableRequestNotFoundException:
                 httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
                 return true;
 
@@ -43,6 +45,42 @@ public sealed class ApiExceptionHandler : IExceptionHandler
 
                 httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
                 await httpContext.Response.WriteAsJsonAsync(conflictProblemDetails, cancellationToken);
+                return true;
+
+            case MissingRequestHeaderException missingHeaderException:
+                var missingHeaderProblemDetails = new ProblemDetails
+                {
+                    Title = "Missing header",
+                    Detail = missingHeaderException.Message,
+                    Status = StatusCodes.Status400BadRequest
+                };
+
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await httpContext.Response.WriteAsJsonAsync(missingHeaderProblemDetails, cancellationToken);
+                return true;
+
+            case InvalidRequestHeaderException invalidHeaderException:
+                var invalidHeaderProblemDetails = new ProblemDetails
+                {
+                    Title = "Invalid header",
+                    Detail = invalidHeaderException.Message,
+                    Status = StatusCodes.Status400BadRequest
+                };
+
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await httpContext.Response.WriteAsJsonAsync(invalidHeaderProblemDetails, cancellationToken);
+                return true;
+
+            case ForbiddenOperationException forbiddenOperationException:
+                var forbiddenProblemDetails = new ProblemDetails
+                {
+                    Title = "Forbidden",
+                    Detail = forbiddenOperationException.Message,
+                    Status = StatusCodes.Status403Forbidden
+                };
+
+                httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await httpContext.Response.WriteAsJsonAsync(forbiddenProblemDetails, cancellationToken);
                 return true;
 
             case HttpRequestException httpRequestException:

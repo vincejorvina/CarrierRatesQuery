@@ -39,6 +39,10 @@ The system aggregates shipping rates from multiple mock carrier APIs and exposes
 - **Adapter Pattern**: one adapter per carrier response format mapped into a single DTO shape.
 - **Open/Closed**: add a new carrier by adding a new client + adapter + strategy + DI registration (minimal changes to core flow).
 
+### Implemented Runtime Features
+
+- **In-memory rate caching**: rate query results are cached in-memory per carrier/query key to reduce redundant outbound carrier calls.
+
 ## Running Locally
 
 ### Prerequisites
@@ -98,11 +102,9 @@ Based on the original PDF requirements, these items are still pending or partial
 - Add lightweight role handling (`X-Role`) to enforce:
   - only admins can disable directly
   - non-admin users can only request disable
-- Add in-memory rate caching for recent queries in the rates pipeline.
 - Add retry policy for carrier API calls (bonus requirement).
 - Expand/add unit tests for:
   - full disable-request approval flow
   - role-based disable restrictions
-  - rate caching behavior
   - retry/error handling behavior
 - Add a detailed step-by-step demo script (planned final documentation).

@@ -3,6 +3,7 @@ using CarrierRatesQuery.Api.Data.Entities;
 using CarrierRatesQuery.Api.Services.Carriers;
 using CarrierRatesQuery.Api.Services.Rates.Strategies;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQuery.Api.Services.Rates;
@@ -17,8 +18,11 @@ public interface IRateQueryService
 public sealed class RateQueryService(
     AppDbContext context,
     IValidator<RateQueryRequest> validator,
-    ICarrierRateStrategyResolver strategyResolver) : IRateQueryService
+    ICarrierRateStrategyResolver strategyResolver,
+    IMemoryCache memoryCache) : IRateQueryService
 {
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(2);
+
     public async Task<IReadOnlyList<ShippingRateResponseDto>> QueryAllEnabledCarriersAsync(
         RateQueryRequest request,
         CancellationToken cancellationToken)
@@ -35,7 +39,7 @@ public sealed class RateQueryService(
 
         foreach (var carrier in carriers)
         {
-            var response = await TryQueryCarrierAsync(carrier, request, cancellationToken);
+            var response = await TryQueryCarrierWithCacheAsync(carrier, request, cancellationToken);
             if (response is not null)
             {
                 responses.Add(response);
@@ -114,12 +118,48 @@ public sealed class RateQueryService(
         return await strategy.TryGetRatesAsync(carrier, request, cancellationToken);
     }
 
+    private async Task<ShippingRateResponseDto?> TryQueryCarrierWithCacheAsync(
+        Carrier carrier,
+        RateQueryRequest request,
+        CancellationToken cancellationToken)
+    {
+        var cacheKey = BuildCarrierRateCacheKey(carrier, request);
+
+        if (memoryCache.TryGetValue(cacheKey, out ShippingRateResponseDto? cached) && cached is not null)
+        {
+            return cached;
+        }
+
+        var response = await TryQueryCarrierAsync(carrier, request, cancellationToken);
+        if (response is null)
+        {
+            return null;
+        }
+
+        memoryCache.Set(cacheKey, response, CacheDuration);
+        return response;
+    }
+
+    private static string BuildCarrierRateCacheKey(Carrier carrier, RateQueryRequest request)
+    {
+        var ratesEndpoint = carrier.Endpoints
+            .FirstOrDefault(x => x.Operation.Equals("Rates", StringComparison.OrdinalIgnoreCase))?
+            .Endpoint
+            ?? "none";
+
+        var updatedAt = carrier.UpdatedAtUtc?.Ticks ?? 0;
+
+        return string.Create(
+            System.Globalization.CultureInfo.InvariantCulture,
+            $"rates:{carrier.Slug}:{carrier.Id:N}:{updatedAt}:{ratesEndpoint}:{request.Weight:F3}:{request.Length:F3}:{request.Width:F3}:{request.Height:F3}");
+    }
+
     private async Task<ShippingRateResponseDto> QueryCarrierInternalAsync(
         Carrier carrier,
         RateQueryRequest request,
         CancellationToken cancellationToken)
     {
-        var response = await TryQueryCarrierAsync(carrier, request, cancellationToken);
+        var response = await TryQueryCarrierWithCacheAsync(carrier, request, cancellationToken);
         if (response is null)
         {
             throw new CarrierConflictException("Carrier does not have a supported enabled rates endpoint.");

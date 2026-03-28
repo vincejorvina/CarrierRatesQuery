@@ -42,6 +42,7 @@ The system aggregates shipping rates from multiple mock carrier APIs and exposes
 ### Implemented Runtime Features
 
 - **In-memory rate caching**: rate query results are cached in-memory per carrier/query key to reduce redundant outbound carrier calls.
+- **Retry & resilience**: carrier API calls use `Microsoft.Extensions.Http.Resilience` standard resilience handler (retry, circuit breaker, timeout).
 - **Role-aware disable flow via header**: `X-Role` controls admin-restricted actions; non-admin direct disable is blocked.
 - **Disable request workflow**: users can submit carrier disable requests; admins can approve/reject requests.
 
@@ -79,7 +80,7 @@ dotnet run --project CarrierRatesQuery.MockLbc
 dotnet run --project CarrierRatesQuery.Api
 ```
 
-Then open Swagger for each service from the URLs printed in terminal output.
+Then open Swagger/API URLs from terminal output.
 
 ## Testing
 
@@ -92,13 +93,4 @@ dotnet test CarrierRatesQuery.Tests/CarrierRatesQuery.Tests.csproj
 ## Notes
 
 - Database is seeded in-memory on startup (`CarrierRatesQuery.Api`).
-- This README intentionally stays high-level; a detailed step-by-step demo/runbook can be added after feature completion.
-
-## TODO (Remaining Assessment Scope)
-
-Based on the original PDF requirements, these items are still pending or partially complete:
-
-- Add retry policy for carrier API calls (bonus requirement).
-- Expand/add unit tests for:
-  - retry/error handling behavior
-- Add a detailed step-by-step demo script (planned final documentation).
+- Carrier API HTTP clients use standard resilience (retry, circuit breaker, timeout) via `Microsoft.Extensions.Http.Resilience`.

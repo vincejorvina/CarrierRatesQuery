@@ -5,6 +5,7 @@ using CarrierRatesQuery.Api.Services.Rates;
 using CarrierRatesQuery.Api.Services.Rates.Adapters;
 using CarrierRatesQuery.Api.Services.Rates.Clients;
 using CarrierRatesQuery.Api.Services.Rates.Strategies;
+using FluentValidation;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,7 +14,7 @@ namespace CarrierRatesQuery.Tests.Rates;
 public class RateQueryServiceTests
 {
     [Fact]
-    public async Task QueryAllEnabledCarriers_FedExAndUpsEnabled_ReturnsBothCarrierRates()
+    public async Task QueryAllEnabledCarriersAsync_FedExAndUpsEnabled_ReturnsBothCarrierRates()
     {
         // Arrange
         await using var context = CreateDbContext();
@@ -65,7 +66,7 @@ public class RateQueryServiceTests
     }
 
     [Fact]
-    public async Task QueryCarrier_DisabledCarrier_ThrowsCarrierConflictException()
+    public async Task QueryCarrierAsync_DisabledCarrier_ThrowsCarrierConflictException()
     {
         // Arrange
         await using var context = CreateDbContext();
@@ -99,7 +100,7 @@ public class RateQueryServiceTests
     }
 
     [Fact]
-    public async Task QueryCarrierBySlug_ValidSlug_ReturnsCarrierRate()
+    public async Task QueryCarrierBySlugAsync_ValidSlug_ReturnsCarrierRate()
     {
         // Arrange
         await using var context = CreateDbContext();
@@ -132,7 +133,7 @@ public class RateQueryServiceTests
     }
 
     [Fact]
-    public async Task QueryCarrierBySlug_SameRequestTwice_UsesCachedCarrierRates()
+    public async Task QueryCarrierBySlugAsync_SameRequestTwice_UsesCachedCarrierRates()
     {
         // Arrange
         await using var context = CreateDbContext();
@@ -165,6 +166,89 @@ public class RateQueryServiceTests
 
         // Assert
         Assert.Equal(1, fedExClient.CallCount);
+    }
+
+    [Fact]
+    public async Task QueryCarrierAsync_CarrierDoesNotExist_ThrowsCarrierNotFoundException()
+    {
+        // Arrange
+        await using var context = CreateDbContext();
+        var service = CreateService(context);
+
+        // Act
+        Func<Task> action = () => service.QueryCarrierAsync(Guid.NewGuid(), new RateQueryRequest(5m, 10m, 5m, 5m), CancellationToken.None);
+
+        // Assert
+        await Assert.ThrowsAsync<CarrierNotFoundException>(action);
+    }
+
+    [Fact]
+    public async Task QueryCarrierBySlugAsync_SlugDoesNotExist_ThrowsCarrierSlugNotFoundException()
+    {
+        // Arrange
+        await using var context = CreateDbContext();
+        context.Carriers.Add(new Carrier
+        {
+            Id = Guid.NewGuid(),
+            Name = "FedEx",
+            IsEnabled = true,
+            CreatedAtUtc = DateTime.UtcNow
+        });
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+
+        // Act
+        Func<Task> action = () => service.QueryCarrierBySlugAsync("unknown", new RateQueryRequest(5m, 10m, 5m, 5m), CancellationToken.None);
+
+        // Assert
+        await Assert.ThrowsAsync<CarrierSlugNotFoundException>(action);
+    }
+
+    [Fact]
+    public async Task QueryCarrierBySlugAsync_UnsupportedCarrier_ThrowsCarrierConflictException()
+    {
+        // Arrange
+        await using var context = CreateDbContext();
+        context.Carriers.Add(new Carrier
+        {
+            Id = Guid.NewGuid(),
+            Name = "LBC Express",
+            IsEnabled = true,
+            CreatedAtUtc = DateTime.UtcNow,
+            Endpoints =
+            [
+                new CarrierEndpoint
+                {
+                    Id = Guid.NewGuid(),
+                    Operation = "Rates",
+                    Endpoint = "http://localhost:5304/api/lbc/rates"
+                }
+            ]
+        });
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context);
+
+        // Act
+        Func<Task> action = () => service.QueryCarrierBySlugAsync("lbcexpress", new RateQueryRequest(5m, 10m, 5m, 5m), CancellationToken.None);
+
+        // Assert
+        await Assert.ThrowsAsync<CarrierConflictException>(action);
+    }
+
+    [Fact]
+    public async Task QueryAllEnabledCarriersAsync_InvalidRequest_ThrowsValidationException()
+    {
+        // Arrange
+        await using var context = CreateDbContext();
+        var service = CreateService(context);
+
+        // Act
+        Func<Task> action = () => service.QueryAllEnabledCarriersAsync(new RateQueryRequest(0m, 10m, 5m, 5m), CancellationToken.None);
+
+        // Assert
+        await Assert.ThrowsAsync<ValidationException>(action);
     }
 
     private static AppDbContext CreateDbContext()

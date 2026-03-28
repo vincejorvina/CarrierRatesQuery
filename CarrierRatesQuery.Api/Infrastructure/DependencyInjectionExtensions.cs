@@ -43,18 +43,21 @@ public static class DependencyInjectionExtensions
 
         services.AddHttpClient<IMockDhlRatesClient, MockDhlRatesClient>(client =>
         {
-            client.Timeout = TimeSpan.FromSeconds(10);
-        });
+            client.Timeout = TimeSpan.FromSeconds(30);
+        })
+        .AddStandardResilienceHandler();
 
         services.AddHttpClient<IMockFedExRatesClient, MockFedExRatesClient>(client =>
         {
-            client.Timeout = TimeSpan.FromSeconds(10);
-        });
+            client.Timeout = TimeSpan.FromSeconds(30);
+        })
+        .AddStandardResilienceHandler();
 
         services.AddHttpClient<IMockUpsRatesClient, MockUpsRatesClient>(client =>
         {
-            client.Timeout = TimeSpan.FromSeconds(10);
-        });
+            client.Timeout = TimeSpan.FromSeconds(30);
+        })
+        .AddStandardResilienceHandler();
 
         services.AddScoped<IValidator<CreateCarrierRequest>, CreateCarrierRequestValidator>();
         services.AddScoped<IValidator<UpdateCarrierRequest>, UpdateCarrierRequestValidator>();

@@ -43,6 +43,70 @@ public class DisableRequestServiceTests
     }
 
     [Fact]
+    public async Task GetAllAsync_MultipleRequests_ReturnsAllOrderedByNewestFirst()
+    {
+        // Arrange
+        await using var context = CreateDbContext();
+        var carrier1Id = await AddCarrierAsync(context, "FedEx");
+        var carrier2Id = await AddCarrierAsync(context, "UPS");
+
+        context.DisableRequests.AddRange(
+            new DisableRequest
+            {
+                Id = Guid.NewGuid(),
+                CarrierId = carrier1Id,
+                RequestedBy = "user.one",
+                Reason = "maintenance",
+                Status = DisableRequestStatus.Pending,
+                RequestedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+            },
+            new DisableRequest
+            {
+                Id = Guid.NewGuid(),
+                CarrierId = carrier2Id,
+                RequestedBy = "user.two",
+                Reason = "user request",
+                Status = DisableRequestStatus.Pending,
+                RequestedAtUtc = DateTime.UtcNow
+            },
+            new DisableRequest
+            {
+                Id = Guid.NewGuid(),
+                CarrierId = carrier1Id,
+                RequestedBy = "user.three",
+                Reason = "contract termination",
+                Status = DisableRequestStatus.Approved,
+                RequestedAtUtc = DateTime.UtcNow.AddMinutes(-10)
+            });
+        await context.SaveChangesAsync();
+
+        var service = CreateService(context, new FakeCarrierService());
+
+        // Act
+        var result = await service.GetAllAsync(CancellationToken.None);
+
+        // Assert
+        Assert.Equal(3, result.Count);
+        Assert.Equal("user.two", result[0].RequestedBy);
+        Assert.Equal("user.one", result[1].RequestedBy);
+        Assert.Equal("user.three", result[2].RequestedBy);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_NoRequests_ReturnsEmptyList()
+    {
+        // Arrange
+        await using var context = CreateDbContext();
+        var service = CreateService(context, new FakeCarrierService());
+
+        // Act
+        var result = await service.GetAllAsync(CancellationToken.None);
+
+        // Assert
+        Assert.Empty(result);
+    }
+
+    [Fact]
     public async Task GetByCarrierAsync_MultipleRequests_ReturnsByNewestFirst()
     {
         // Arrange

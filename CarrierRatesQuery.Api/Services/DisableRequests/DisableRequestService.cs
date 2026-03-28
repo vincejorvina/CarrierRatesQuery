@@ -8,6 +8,7 @@ namespace CarrierRatesQuery.Api.Services.DisableRequests;
 
 public interface IDisableRequestService
 {
+    Task<IReadOnlyList<DisableRequestResponseDto>> GetAllAsync(CancellationToken cancellationToken);
     Task<IReadOnlyList<DisableRequestResponseDto>> GetByCarrierAsync(Guid carrierId, CancellationToken cancellationToken);
     Task<DisableRequestResponseDto> CreateAsync(Guid carrierId, string requestedBy, string reason, CancellationToken cancellationToken);
     Task<DisableRequestResponseDto> ApproveAsync(Guid disableRequestId, string processedBy, CancellationToken cancellationToken);
@@ -19,6 +20,16 @@ public sealed class DisableRequestService(
     ICarrierService carrierService,
     IValidator<DisableCarrierRequest> disableValidator) : IDisableRequestService
 {
+    public async Task<IReadOnlyList<DisableRequestResponseDto>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var requests = await context.DisableRequests
+            .AsNoTracking()
+            .OrderByDescending(x => x.RequestedAtUtc)
+            .ToListAsync(cancellationToken);
+
+        return requests.Select(Map).ToList();
+    }
+
     public async Task<IReadOnlyList<DisableRequestResponseDto>> GetByCarrierAsync(Guid carrierId, CancellationToken cancellationToken)
     {
         var carrierExists = await context.Carriers.AnyAsync(x => x.Id == carrierId, cancellationToken);

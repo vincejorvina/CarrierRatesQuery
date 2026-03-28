@@ -14,6 +14,19 @@ public class DisableRequestsController(
     IRequestRoleAccessor requestRoleAccessor) : ControllerBase
 {
     /// <summary>
+    /// Returns all disable requests ordered by requested date (newest first).
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<DisableRequestResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        _ = requestRoleAccessor.GetRequiredRole();
+        var requests = await disableRequestService.GetAllAsync(cancellationToken);
+        return Ok(requests);
+    }
+
+    /// <summary>
     /// Approves a pending disable request, which disables the associated carrier. Enforces all disable business rules.
     /// </summary>
     /// <param name="disableRequestId">The disable request's unique identifier.</param>

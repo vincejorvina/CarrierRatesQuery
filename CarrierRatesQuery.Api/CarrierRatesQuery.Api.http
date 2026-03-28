@@ -1,6 +1,116 @@
 @CarrierRatesQuery.Api_HostAddress = http://localhost:5052
+@carrierId = 00000000-0000-0000-0000-000000000000
+@endpointId = 00000000-0000-0000-0000-000000000000
+@carrierSlug = fedex
 
-GET {{CarrierRatesQuery.Api_HostAddress}}/weatherforecast/
+GET {{CarrierRatesQuery.Api_HostAddress}}/api/carriers
 Accept: application/json
+
+###
+
+POST {{CarrierRatesQuery.Api_HostAddress}}/api/rates/query-all
+Accept: application/json
+Content-Type: application/json
+
+{
+  "weight": 5,
+  "length": 10,
+  "width": 5,
+  "height": 5
+}
+
+###
+
+POST {{CarrierRatesQuery.Api_HostAddress}}/api/rates/query/{{carrierId}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "weight": 5,
+  "length": 10,
+  "width": 5,
+  "height": 5
+}
+
+###
+
+POST {{CarrierRatesQuery.Api_HostAddress}}/api/rates/query/slug/{{carrierSlug}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "weight": 5,
+  "length": 10,
+  "width": 5,
+  "height": 5
+}
+
+###
+
+PATCH {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}/disable
+Accept: application/json
+Content-Type: application/json
+
+{
+  "reason": "maintenance"
+}
+
+###
+
+PATCH {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}/enable
+Accept: application/json
+
+###
+
+DELETE {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}
+Accept: application/json
+
+###
+
+GET {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}/endpoints
+Accept: application/json
+
+###
+
+GET {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}/endpoints/{{endpointId}}
+Accept: application/json
+
+###
+
+POST {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}/endpoints
+Accept: application/json
+Content-Type: application/json
+
+{
+  "operation": "Rates",
+  "endpoint": "http://localhost:5133/api/fedex/rates"
+}
+
+###
+
+PUT {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}/endpoints/{{endpointId}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "operation": "Rates",
+  "endpoint": "http://localhost:5133/api/fedex/rates"
+}
+
+###
+
+DELETE {{CarrierRatesQuery.Api_HostAddress}}/api/carriers/{{carrierId}}/endpoints/{{endpointId}}
+Accept: application/json
+
+###
+
+POST {{CarrierRatesQuery.Api_HostAddress}}/api/carriers
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "Demo Carrier",
+  "isEnabled": true
+}
 
 ###

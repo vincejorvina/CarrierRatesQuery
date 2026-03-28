@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CarrierRatesQuery.Api.Controllers;
 
+/// <summary>
+/// Manages carrier configurations including creation, updates, enable/disable, and disable-request workflows.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class CarriersController(
@@ -12,6 +15,9 @@ public class CarriersController(
     IDisableRequestService disableRequestService,
     IRequestRoleAccessor requestRoleAccessor) : ControllerBase
 {
+    /// <summary>
+    /// Returns all carriers ordered by name.
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<CarrierResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
@@ -20,6 +26,10 @@ public class CarriersController(
         return Ok(carriers);
     }
 
+    /// <summary>
+    /// Returns a carrier by its ID, including configured endpoints.
+    /// </summary>
+    /// <param name="id">The carrier's unique identifier.</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(CarrierResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -35,6 +45,10 @@ public class CarriersController(
         return Ok(carrier);
     }
 
+    /// <summary>
+    /// Creates a new carrier.
+    /// </summary>
+    /// <param name="request">Carrier name and enabled state.</param>
     [HttpPost]
     [ProducesResponseType(typeof(CarrierResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -44,6 +58,11 @@ public class CarriersController(
         return CreatedAtAction(nameof(GetById), new { id = carrier.Id }, carrier);
     }
 
+    /// <summary>
+    /// Updates a carrier's name and enabled state.
+    /// </summary>
+    /// <param name="id">The carrier's unique identifier.</param>
+    /// <param name="request">Updated carrier name and enabled state.</param>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(CarrierResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -54,6 +73,10 @@ public class CarriersController(
         return Ok(carrier);
     }
 
+    /// <summary>
+    /// Deletes a carrier. The carrier must be disabled before it can be deleted.
+    /// </summary>
+    /// <param name="id">The carrier's unique identifier.</param>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -64,6 +87,10 @@ public class CarriersController(
         return NoContent();
     }
 
+    /// <summary>
+    /// Enables a carrier so it participates in rate queries.
+    /// </summary>
+    /// <param name="id">The carrier's unique identifier.</param>
     [HttpPatch("{id:guid}/enable")]
     [ProducesResponseType(typeof(CarrierResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -73,6 +100,12 @@ public class CarriersController(
         return Ok(carrier);
     }
 
+    /// <summary>
+    /// Disables a carrier. Admin only. Enforces business rules: cannot disable the only active carrier,
+    /// a carrier with pending shipments, or a carrier with pending financial settlements. A reason must be provided and is logged as an audit record.
+    /// </summary>
+    /// <param name="id">The carrier's unique identifier.</param>
+    /// <param name="request">The reason for disabling.</param>
     [HttpPatch("{id:guid}/disable")]
     [ProducesResponseType(typeof(CarrierResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -91,6 +124,10 @@ public class CarriersController(
         return Ok(carrier);
     }
 
+    /// <summary>
+    /// Returns all disable requests for a carrier, ordered newest first.
+    /// </summary>
+    /// <param name="id">The carrier's unique identifier.</param>
     [HttpGet("{id:guid}/disable-requests")]
     [ProducesResponseType(typeof(IReadOnlyList<DisableRequestResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -103,11 +140,15 @@ public class CarriersController(
         return Ok(requests);
     }
 
+    /// <summary>
+    /// Submits a request to disable a carrier. Any authenticated user can submit; an admin must approve or reject.
+    /// </summary>
+    /// <param name="id">The carrier's unique identifier.</param>
+    /// <param name="request">The reason for the disable request.</param>
     [HttpPost("{id:guid}/disable-requests")]
     [ProducesResponseType(typeof(DisableRequestResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateDisableRequest(Guid id, [FromBody] DisableCarrierRequest request, CancellationToken cancellationToken)
     {
         _ = requestRoleAccessor.GetRequiredRole();

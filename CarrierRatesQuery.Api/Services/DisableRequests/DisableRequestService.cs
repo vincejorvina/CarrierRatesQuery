@@ -124,6 +124,17 @@ public sealed class DisableRequestService(
     }
 }
 
+/// <summary>
+/// Response for a carrier disable request.
+/// </summary>
+/// <param name="Id">Unique identifier.</param>
+/// <param name="CarrierId">The carrier this request applies to.</param>
+/// <param name="RequestedBy">Who submitted the request.</param>
+/// <param name="Reason">The reason for the disable request.</param>
+/// <param name="Status">Current status: Pending, Approved, or Rejected.</param>
+/// <param name="RequestedAtUtc">When the request was submitted.</param>
+/// <param name="ProcessedBy">Who approved or rejected the request.</param>
+/// <param name="ProcessedAtUtc">When the request was processed.</param>
 public sealed record DisableRequestResponseDto(
     Guid Id,
     Guid CarrierId,

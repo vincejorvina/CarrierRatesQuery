@@ -4,12 +4,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CarrierRatesQuery.Api.Controllers;
 
+/// <summary>
+/// Manages the approval workflow for carrier disable requests. Admin only.
+/// </summary>
 [ApiController]
 [Route("api/disable-requests")]
 public class DisableRequestsController(
     IDisableRequestService disableRequestService,
     IRequestRoleAccessor requestRoleAccessor) : ControllerBase
 {
+    /// <summary>
+    /// Approves a pending disable request, which disables the associated carrier. Enforces all disable business rules.
+    /// </summary>
+    /// <param name="disableRequestId">The disable request's unique identifier.</param>
     [HttpPatch("{disableRequestId:guid}/approve")]
     [ProducesResponseType(typeof(DisableRequestResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -29,6 +36,10 @@ public class DisableRequestsController(
         return Ok(result);
     }
 
+    /// <summary>
+    /// Rejects a pending disable request. The carrier remains enabled.
+    /// </summary>
+    /// <param name="disableRequestId">The disable request's unique identifier.</param>
     [HttpPatch("{disableRequestId:guid}/reject")]
     [ProducesResponseType(typeof(DisableRequestResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

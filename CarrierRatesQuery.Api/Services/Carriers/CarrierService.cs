@@ -188,7 +188,7 @@ public sealed class CarrierService(
             IsEnabled: carrier.IsEnabled,
             CreatedAtUtc: carrier.CreatedAtUtc,
             UpdatedAtUtc: carrier.UpdatedAtUtc,
-            Endpoints: carrier.Endpoints
+            EndPoints: carrier.Endpoints
                 .OrderBy(x => x.Operation)
                 .Select(endpoint => new CarrierEndpointDto(
                     Id: endpoint.Id,

@@ -73,7 +73,7 @@ public class CarrierServiceTests
         Assert.NotNull(result);
         Assert.Equal(carrier.Id, result.Id);
         Assert.Equal("FedEx", result.Name);
-        Assert.Single(result.Endpoints);
+        Assert.Single(result.EndPoints);
     }
 
     [Fact]

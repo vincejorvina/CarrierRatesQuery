@@ -3,10 +3,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CarrierRatesQuery.Api.Controllers;
 
+/// <summary>
+/// Queries shipping rates from enabled carrier APIs and returns them in a unified format.
+/// </summary>
 [ApiController]
 [Route("api/rates")]
 public class RatesController(IRateQueryService rateQueryService) : ControllerBase
 {
+    /// <summary>
+    /// Queries shipping rates from all enabled carriers and returns aggregated results.
+    /// </summary>
+    /// <param name="request">Package dimensions and weight.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Shipping rates from each enabled carrier.</returns>
     [HttpPost("query-all")]
     [ProducesResponseType(typeof(IReadOnlyList<ShippingRateResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -16,6 +25,13 @@ public class RatesController(IRateQueryService rateQueryService) : ControllerBas
         return Ok(rates);
     }
 
+    /// <summary>
+    /// Queries shipping rates for a specific carrier by its ID.
+    /// </summary>
+    /// <param name="carrierId">The carrier's unique identifier.</param>
+    /// <param name="request">Package dimensions and weight.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Shipping rates from the specified carrier.</returns>
     [HttpPost("query/{carrierId:guid}")]
     [ProducesResponseType(typeof(ShippingRateResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -27,6 +43,13 @@ public class RatesController(IRateQueryService rateQueryService) : ControllerBas
         return Ok(rate);
     }
 
+    /// <summary>
+    /// Queries shipping rates for a specific carrier by its slug (e.g. "fedex", "ups", "dhl").
+    /// </summary>
+    /// <param name="carrierSlug">The carrier's URL-friendly name identifier.</param>
+    /// <param name="request">Package dimensions and weight.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Shipping rates from the specified carrier.</returns>
     [HttpPost("query/slug/{carrierSlug}")]
     [ProducesResponseType(typeof(ShippingRateResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]

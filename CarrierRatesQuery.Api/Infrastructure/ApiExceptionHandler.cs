@@ -95,6 +95,18 @@ public sealed class ApiExceptionHandler : IExceptionHandler
                 await httpContext.Response.WriteAsJsonAsync(upstreamProblemDetails, cancellationToken);
                 return true;
 
+            case FormatException formatException:
+                var formatProblemDetails = new ProblemDetails
+                {
+                    Title = "Upstream response format error",
+                    Detail = formatException.Message,
+                    Status = StatusCodes.Status502BadGateway
+                };
+
+                httpContext.Response.StatusCode = StatusCodes.Status502BadGateway;
+                await httpContext.Response.WriteAsJsonAsync(formatProblemDetails, cancellationToken);
+                return true;
+
             default:
                 return false;
         }

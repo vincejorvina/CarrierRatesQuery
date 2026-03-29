@@ -7,7 +7,7 @@ public sealed class LbcRateStrategy(
     IMockLbcRatesClient mockLbcRatesClient,
     ICarrierRateAdapter<MockLbcRateResponse> lbcRateAdapter) : ICarrierRateStrategy
 {
-    public string CarrierSlug => "lbcexpress";
+    public string CarrierSlug => "lbc";
 
     public async Task<ShippingRateResponseDto?> TryGetRatesAsync(
         Carrier carrier,

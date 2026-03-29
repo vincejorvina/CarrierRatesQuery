@@ -213,7 +213,7 @@ public class RateQueryServiceTests
         context.Carriers.Add(new Carrier
         {
             Id = Guid.NewGuid(),
-            Name = "LBC Express",
+            Name = "LBC",
             IsEnabled = true,
             CreatedAtUtc = DateTime.UtcNow,
             Endpoints =
@@ -231,7 +231,7 @@ public class RateQueryServiceTests
         var service = CreateService(context);
 
         // Act
-        Func<Task> action = () => service.QueryCarrierBySlugAsync("lbcexpress", new RateQueryRequest(5m, 10m, 5m, 5m), CancellationToken.None);
+        Func<Task> action = () => service.QueryCarrierBySlugAsync("lbc", new RateQueryRequest(5m, 10m, 5m, 5m), CancellationToken.None);
 
         // Assert
         await Assert.ThrowsAsync<CarrierConflictException>(action);
